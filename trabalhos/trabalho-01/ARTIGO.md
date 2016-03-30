@@ -20,10 +20,13 @@ ok). O VBA precisa de poucas linhas de código para resolver um problema de um a
 
 
 **Exemplos de código representativos**
+```sh
 Hello World 
     Sub hello() 
     MsgBox "Hello World - Excel VBA here" 
     End Sub
+```
+```sh
 
 2)Somar dois números 
     Dim a, b, c As Integer 
@@ -31,16 +34,25 @@ Hello World
     Sub Soma(a As Integer, b As Integer, c As Integer) 
     c = a + b
     End Sub
+```
 
+```sh
 3) Manipulando dados do excel
     Sub manipula() 
     Range("A1").Value = "Guru do Excel" 
     End sub
+```
+
 
 **Bibliografia**
 [http://www.dcc.fc.up.pt/~ricroc/aulas/0203/sap/pdf/vba_excel.pdf](http://www.dcc.fc.up.pt/~ricroc/aulas/0203/sap/pdf/vba_excel.pdf) 
+
 [http://ambienteoffice.com.br/vba/ ](http://ambienteoffice.com.br/vba/ )
+
 [http://www.bertolo.pro.br/FinEst/SemanaContabeis2007/MacroExcel.pdf ](http://www.bertolo.pro.br/FinEst/SemanaContabeis2007/MacroExcel.pdf )
+
 [https://www.oficinadanet.com.br/artigo/excel/estudos-sobre-vba-introducao ](https://www.oficinadanet.com.br/artigo/excel/estudos-sobre-vba-introducao )
+
 [http://webserver.mohid.com/MTDP/downloads/Introdu%C3%A7%C3%A3o_%C3%A0_programa%C3%A7%C3%A3o_em_VBA.pdf](http://webserver.mohid.com/MTDP/downloads/Introdu%C3%A7%C3%A3o_%C3%A0_programa%C3%A7%C3%A3o_em_VBA.pdf)
+
 [http://www.officevb.com/2011/02/orientacao-objetos-no-vba-parte-i.html](http://www.officevb.com/2011/02/orientacao-objetos-no-vba-parte-i.html)

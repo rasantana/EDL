@@ -1,3 +1,7 @@
+--bugs
+--no kick bomb, ao encostar no playerr  a msm devvee parar
+--nao percebi o cenario, mas a msg foi exibida pra mim "player3 perdeu"
+
 Player = require('player')
 Bomb = require('bomb')
 Monster = require('monster')
@@ -5,7 +9,8 @@ function love.load()
 	itens = {kick_bomb=1, rollerblades=2,fire_bomb_1=3,fire_bomb_2=4, ghost=5, superbomb=6,qtdBomb=7}
 	-- trabalho-06
 	-- table 'itens' esta sendo usada como registro
-	player = Player.newPlayer(64, 64,"/Imagens/player1_moveDown.PNG")
+	players = {}
+	createPlayers()
 	--trabalho5
 	--monsters: colecao de monstros 
 	--Escopo: Variável global.
@@ -20,12 +25,12 @@ function love.load()
 	-- trabalho-06
 	-- table 'informations' esta sendo usada como dicionario
 	monsters[1] = Monster.newMonster(288,192)
-	monsters[2] = Monster.newMonster(384,384)
+	monsters[2] = Monster.newMonster(64,256)
 	monsters[3] = Monster.newMonster(64,384)
 	-- trabalho-06
 	-- table 'monsters' esta sendo usada como array
 	colorMonsters={0, 255, 255, 125}
-	teste = #(player.bomb)
+	--teste = #(player.bomb)
 	--0: Blank space
 	--1: Block
 	--2: Stone
@@ -65,9 +70,10 @@ function love.load()
 		}	
 	--createMapItem()
 		
-	mapColor = {255, 255, 255}
 	sideSquare=32
-	map[player.grid_y/sideSquare][player.grid_x/sideSquare]=4
+	for i=1, #players do 
+		map[players[i].grid_y/sideSquare][players[i].grid_x/sideSquare]=4
+	end
 	-- Nome: variável "sideSquare"
 	-- Propriedade: endereço
 	-- Binding time: compilação
@@ -79,23 +85,37 @@ function love.load()
 	-- Explicação: dado que gameOver é uma variável global, seu endereço já é determinado em tempo de compilação    
 
 	createItens()
+	msgGameOver=""
 end
  
-function love.update(dt)
-	player.act_y = player.act_y - ((player.act_y - player.grid_y) * player.speed * dt)
-	player.act_x = player.act_x - ((player.act_x - player.grid_x) * player.speed * dt)
+ function createPlayers()
+	player1 = Player.newPlayer(64, 64,"/Imagens/player1_moveDown.PNG")
+	player2 = Player.newPlayer(448, 384,"/Imagens/player2_moveUp.PNG")
 	
-	if(#player.bomb>0)then
-		for i=#player.bomb,1,-1 do 
-			player.bomb[i].act_y = player.bomb[i].act_y - ((player.bomb[i].act_y - player.bomb[i].grid_y) * player.bomb[i].speed * dt)
-			player.bomb[i].act_x = player.bomb[i].act_x - ((player.bomb[i].act_x - player.bomb[i].grid_x) * player.bomb[i].speed * dt)
+	table.insert(players, player1)
+	table.insert(players, player2)
+ end
+ 
+function love.update(dt)
+	for i=1, #players do 
+		players[i].act_y = players[i].act_y - ((players[i].act_y - players[i].grid_y) * players[i].speed * dt)
+		players[i].act_x = players[i].act_x - ((players[i].act_x - players[i].grid_x) * players[i].speed * dt)
+		if(players[i].iconDirection~="-")then
+			animationMovement(players[i],i)
+		end
+		cancelIconDirection(players[i],i)
 		
-			if(player.bomb[i].kickBombDirection~="-")then
-				kickBomb(player.bomb[i])
-			end		
+		if(#players[i].bomb>0)then
+			for j=#players[i].bomb,1,-1 do 
+				players[i].bomb[j].act_y = players[i].bomb[j].act_y - ((players[i].bomb[j].act_y - players[i].bomb[j].grid_y) * players[i].bomb[j].speed * dt)
+				players[i].bomb[j].act_x = players[i].bomb[j].act_x - ((players[i].bomb[j].act_x - players[i].bomb[j].grid_x) * players[i].bomb[j].speed * dt)
+			
+				if(players[i].bomb[j].kickBombDirection~="-")then
+					kickBomb(players[i].bomb[j])
+				end		
+			end
 		end
 	end
-	local i=1
 	-- Nome: Palavra reservada "local"
 	-- Propriedade: Restrição de escopo
 	-- Binding time: desenho
@@ -105,30 +125,43 @@ function love.update(dt)
 		monsters[i].act_x = monsters[i].act_x - ((monsters[i].act_x - monsters[i].grid_x) * monsters[i].speed * dt)
 	end	
 	movementMonsters()
-	if(player.iconDirection~="-")then
-		animationMovement(player)
-	end
-	cancelIconDirection(player)
-	informations = {["player.grid_x:"]=player.grid_x, 
-					["player.grid_y:"]=player.grid_y, 
-					["player.qtdBombs:"]=player.qtdBombs, 
-					["player.bombDistanceExplosion:"]=player.bombDistanceExplosion, 
-					["player.speed:"]=player.speed, 
-					["player.kick_bombs:"]=tostring(player.kick_bombs), 
-					["player.isGhost:"]=tostring(player.isGhost), 
-					["player.hasSuperBomb:"]=tostring(player.hasSuperBomb)
+	
+	informations = {["teste:"]=teste, 
+					["player[1].grid_x:"]=players[1].grid_x, 
+					["player[1].grid_y:"]=players[1].grid_y, 
+					["player[1].qtdBombs:"]=players[1].qtdBombs, 
+					["player[1].bombDistanceExplosion:"]=players[1].bombDistanceExplosion, 
+					["player[1].speed:"]=players[1].speed, 
+					["player[1].kick_bombs:"]=tostring(players[1].kick_bombs), 
+					["player[1].isGhost:"]=tostring(players[1].isGhost), 
+					["player[1].hasSuperBomb:"]=tostring(players[1].hasSuperBomb)
 	}
 	--teste = player.act_x.."----"..player.act_y
+	gameOverByMonster()
 end
+
+function gameOverByMonster()
+	for i=1, #monsters do 
+		for j=1, #players do 
+			if(players[j].grid_x==monsters[i].grid_x and players[j].grid_y==monsters[i].grid_y)then
+				msgGameOver="Fim de jogo - player "..j.." perdeu."
+				gameOver = true
+			end
+		end
+	end
+end
+
  
 function love.draw()
 	if(gameOver==false) then
 		createMap()
-		setPlayer()
 		setMonsters()
-		if(#player.bomb>0)then
-			for i=1, #player.bomb do 
-				setBomb(player.bomb[i])
+		for i=1, #players do 
+			setPlayer(players[i])
+			if(#players[i].bomb>0)then
+				for j=#players[i].bomb,1,-1 do 
+					setBomb(players[i].bomb[j])
+				end
 			end
 		end
 		explosion()
@@ -136,7 +169,7 @@ function love.draw()
 		printInformations()
 		printMap()
 	else
-		love.graphics.print('Fim de jogo', love.graphics.getWidth()/2 - 40, love.graphics.getHeight()/2 - 5)
+		love.graphics.print(msgGameOver, love.graphics.getWidth()/2 - 40, love.graphics.getHeight()/2 - 5)
 	end
 end
 
@@ -150,37 +183,37 @@ function printInformations()
 	end
 end
 
-function cancelIconDirection(object)
+function cancelIconDirection(object,i)
 	if(object.iconDirection=="Up")then
 		if(object.act_y<=(object.grid_y+4))then
-			object.img = love.graphics.newImage("/Imagens/player1_move"..object.iconDirection..".PNG")
+			object.img = love.graphics.newImage("/Imagens/player"..i.."_move"..object.iconDirection..".PNG")
 			object.iconDirection="-"	
 		end
 	elseif(object.iconDirection=="Down")then
 		if(object.act_y>=(object.grid_y-4))then
-			object.img = love.graphics.newImage("/Imagens/player1_move"..object.iconDirection..".PNG")
+			object.img = love.graphics.newImage("/Imagens/player"..i.."_move"..object.iconDirection..".PNG")
 			object.iconDirection="-"	
 		end
 	elseif(object.iconDirection=="Left")then
 		if(object.act_x<=(object.grid_x+4))then
-			object.img = love.graphics.newImage("/Imagens/player1_move"..object.iconDirection..".PNG")
+			object.img = love.graphics.newImage("/Imagens/player"..i.."_move"..object.iconDirection..".PNG")
 			object.iconDirection="-"	
 		end
 	elseif(object.iconDirection=="Right")then
 		if(object.act_x>=(object.grid_x-4))then
-			object.img = love.graphics.newImage("/Imagens/player1_move"..object.iconDirection..".PNG")
+			object.img = love.graphics.newImage("/Imagens/player"..i.."_move"..object.iconDirection..".PNG")
 			object.iconDirection="-"	
 		end
 	end
 end
 
 --ao utilizar esse metodo para monstros lembre-se de inserir os atributos utilizados aqui na "classe" monstro também 
-function animationMovement(object)
+function animationMovement(object,i)
 	local currentTime = love.timer.getTime()
 	local timeResult = currentTime - object.lastIconTime
 	
 	if(timeResult > object.iconFlag)then
-		player.img = love.graphics.newImage("/Imagens/player1_move"..object.iconDirection..object.iconNumber..".PNG")
+		object.img = love.graphics.newImage("/Imagens/player"..i.."_move"..object.iconDirection..object.iconNumber..".PNG")
 		if(object.iconNumber==1)then
 			object.iconNumber=object.iconNumber+1
 		else
@@ -235,51 +268,37 @@ function kickBomb(bomb)
 	local timeResult = currentTime - bomb.lastKickBombTime
 	if (timeResult > bomb.kickBombFlag)then
 		if(bomb.kickBombDirection=="UP")then
-			if noCollision(0, -1, bomb) then
-				if existCollision(0, -1, bomb,5) then
-					bomb.kickBombDirection="-"
-				else
-					map[bomb.grid_y/sideSquare][bomb.grid_x/sideSquare]=0
-					bomb.grid_y = bomb.grid_y - sideSquare	
-					map[bomb.grid_y/sideSquare][bomb.grid_x/sideSquare]=3
-				end
-			end	
+			kickedBomb(bomb,0,-1)
 		elseif(bomb.kickBombDirection=="DOWN")then
-			if noCollision(0, 1, bomb) then
-				if existCollision(0, 1, bomb,5) then
-					bomb.kickBombDirection="-"
-				else
-					map[bomb.grid_y/sideSquare][bomb.grid_x/sideSquare]=0
-					bomb.grid_y = bomb.grid_y + sideSquare
-					map[bomb.grid_y/sideSquare][bomb.grid_x/sideSquare]=3
-				end
-			end
+			kickedBomb(bomb,0,1)
 		elseif(bomb.kickBombDirection=="LEFT")then
-			if noCollision(-1, 0, bomb) then
-				if existCollision(-1, 0, bomb,5) then
-					bomb.kickBombDirection="-"
-				else
-					map[bomb.grid_y/sideSquare][bomb.grid_x/sideSquare]=0
-					bomb.grid_x = bomb.grid_x - sideSquare
-					map[bomb.grid_y/sideSquare][bomb.grid_x/sideSquare]=3
-				end
-			end
+			kickedBomb(bomb,-1,0)
 		elseif(bomb.kickBombDirection=="RIGHT")then
-			if noCollision(1, 0, bomb) then
-				if existCollision(1, 0, bomb,5) then
-					bomb.kickBombDirection="-"
-				else
-					map[bomb.grid_y/sideSquare][bomb.grid_x/sideSquare]=0
-					bomb.grid_x = bomb.grid_x + sideSquare	
-					map[bomb.grid_y/sideSquare][bomb.grid_x/sideSquare]=3
-				end
-			end
+			kickedBomb(bomb,1,0)
 		end
 	end
 end
 
-function setPlayer()
-	love.graphics.draw(player.img, player.act_x, player.act_y)
+function kickedBomb(bomb,x,y)
+	if (not noCollision(x, y, bomb)) then
+			bomb.kickBombDirection="-"
+	else
+		map[bomb.grid_y/sideSquare][bomb.grid_x/sideSquare]=0
+		if(bomb.kickBombDirection=="UP")then
+			bomb.grid_y = bomb.grid_y - sideSquare
+		elseif(bomb.kickBombDirection=="DOWN")then
+			bomb.grid_y = bomb.grid_y + sideSquare
+		elseif(bomb.kickBombDirection=="LEFT")then
+			bomb.grid_x = bomb.grid_x - sideSquare
+		elseif(bomb.kickBombDirection=="RIGHT")then
+			bomb.grid_x = bomb.grid_x + sideSquare	
+		end
+		map[bomb.grid_y/sideSquare][bomb.grid_x/sideSquare]=3
+	end
+end
+
+function setPlayer(prPlayer)
+	love.graphics.draw(prPlayer.img, prPlayer.act_x, prPlayer.act_y)
 end
 
 function setMonsters()
@@ -328,16 +347,16 @@ function setBomb(bomb)
 end
 
 function createMap()
-	love.graphics.setColor(mapColor)
+	img_map_block = love.graphics.newImage("/Imagens/map_block.PNG")
+	img_map_stone = love.graphics.newImage("/Imagens/map_stone.PNG")
+	img_blank_space = love.graphics.newImage("/Imagens/map_blank_space.PNG")
 	for y=1, #map do
 		for x=1, #map[y] do
 			if map[y][x] == 1 then
-				love.graphics.rectangle("fill", x * sideSquare,y * sideSquare, sideSquare, sideSquare)
-			end
-			if map[y][x] == 2 then
-				love.graphics.rectangle("line", x * sideSquare, y * sideSquare, sideSquare, sideSquare)
-			end
-			if(map[y][x] == 0)then
+				love.graphics.draw(img_map_block, x * sideSquare,y * sideSquare)
+			elseif map[y][x] == 2 then
+				love.graphics.draw(img_map_stone, x * sideSquare, y * sideSquare)
+			elseif(map[y][x] == 0)then
 				if (mapItem[y][x] == itens.kick_bomb) then
 					love.graphics.draw(love.graphics.newImage("/Imagens/item_kick_bomb.PNG"), x * sideSquare, y * sideSquare)
 				elseif (mapItem[y][x] == itens.rollerblades) then
@@ -353,6 +372,9 @@ function createMap()
 				elseif (mapItem[y][x] == itens.qtdBomb) then
 					love.graphics.draw(love.graphics.newImage("/Imagens/item_bomb.PNG"), x * sideSquare, y * sideSquare)
 				end
+			end
+			if(map[y][x] == 4 or map[y][x] == 0 or map[y][x] == 3)then
+				love.graphics.draw(img_blank_space, x * sideSquare, y * sideSquare)
 			end
 		end
 	end
@@ -380,47 +402,69 @@ function printMap()
 	end
 end 
 
+--todo: refatorar
 function love.keypressed(key)
+	teste=key
 	if key == "up" then
 	-- trabalho-06
 	-- variável 'key' esta sendo usada como enumeração
-		movePlayer(0,-1,"UP","/Imagens/player1_moveUp.PNG")
+		movePlayer(players[1],0,-1,"UP","/Imagens/player1_moveUp.PNG")
 	elseif key == "down" then
-		movePlayer(0,1,"DOWN","/Imagens/player1_moveDown.PNG")
+		movePlayer(players[1],0,1,"DOWN","/Imagens/player1_moveDown.PNG")
 	elseif key == "left" then
-		movePlayer(-1,0,"LEFT","/Imagens/player1_moveLeft.PNG")
+		movePlayer(players[1],-1,0,"LEFT","/Imagens/player1_moveLeft.PNG")
 	elseif key == "right" then
-		movePlayer(1,0,"RIGHT","/Imagens/player1_moveRight.PNG")
-	elseif key == "space" then
-		if(#player.bomb < player.qtdBombs) then
+		movePlayer(players[1],1,0,"RIGHT","/Imagens/player1_moveRight.PNG")
+	elseif key == "kp0" then
+		if(#players[1].bomb < players[1].qtdBombs) then
 			--if player isnt on the block
-			if (not existCollision(0, 0, player, 2)) then
-				local aux = #player.bomb+1
-				player.bomb[aux]=Bomb.newBomb()		
-				player.bomb[aux].grid_x=player.grid_x 
-				player.bomb[aux].grid_y=player.grid_y
-				player.bomb[aux].act_x=player.bomb[aux].grid_x
-				player.bomb[aux].act_y=player.bomb[aux].grid_y
-				map[player.bomb[aux].grid_y/sideSquare][player.bomb[aux].grid_x/sideSquare]=3	
-				player.bomb[aux].initTime = love.timer.getTime()
+			if (not existCollision(0, 0, players[1], 2)) then
+				local aux = #players[1].bomb+1
+				players[1].bomb[aux]=Bomb.newBomb()		
+				players[1].bomb[aux].grid_x=players[1].grid_x 
+				players[1].bomb[aux].grid_y=players[1].grid_y
+				players[1].bomb[aux].act_x=players[1].bomb[aux].grid_x
+				players[1].bomb[aux].act_y=players[1].bomb[aux].grid_y
+				map[players[1].bomb[aux].grid_y/sideSquare][players[1].bomb[aux].grid_x/sideSquare]=3	
+				players[1].bomb[aux].initTime = love.timer.getTime()
 				--player.qtdBombs=player.qtdBombs+1
-				teste = #player.bomb
+				teste = #players[1].bomb
+			end
+		end
+	elseif key == "w" then
+		movePlayer(players[2],0,-1,"UP","/Imagens/player2_moveUp.PNG")
+	elseif key == "s" then
+		movePlayer(players[2],0,1,"DOWN","/Imagens/player2_moveDown.PNG")
+	elseif key == "a" then
+		movePlayer(players[2],-1,0,"LEFT","/Imagens/player2_moveLeft.PNG")
+	elseif key == "d" then
+		movePlayer(players[2],1,0,"RIGHT","/Imagens/player2_moveRight.PNG")
+	elseif key == "space" then
+		if(#players[2].bomb < players[2].qtdBombs) then
+			--if player isnt on the block
+			if (not existCollision(0, 0, players[2], 2)) then
+				local aux = #players[2].bomb+1
+				players[2].bomb[aux]=Bomb.newBomb()		
+				players[2].bomb[aux].grid_x=players[2].grid_x 
+				players[2].bomb[aux].grid_y=players[2].grid_y
+				players[2].bomb[aux].act_x=players[2].bomb[aux].grid_x
+				players[2].bomb[aux].act_y=players[2].bomb[aux].grid_y
+				map[players[2].bomb[aux].grid_y/sideSquare][players[2].bomb[aux].grid_x/sideSquare]=3	
+				players[2].bomb[aux].initTime = love.timer.getTime()
+				--player.qtdBombs=player.qtdBombs+1
+				teste = #players[2].bomb
 			end
 		end
 	end
 end
 
-function movePlayer(x,y,direction,imgDirection)
-	if(existCollision(x, y, player,3)) then
+function movePlayer(player,x,y,direction,imgDirection)
+	local ibomb = getIndexBombCollision(x, y, player)
+	if(ibomb~=0) then
 		if(player.kick_bombs)then
-			if(#player.bomb>0)then
-				for i=#player.bomb,1,-1 do 
-					player.bomb[i].kickBombDirection=direction
-				end
-			end
+			player.bomb[ibomb].kickBombDirection=direction
 		end
-	elseif(existCollision(x, y, player,5))then
-		gameOver=true
+	
 	elseif (not existCollision(x, y, player, 1)) then 
 		if (not existCollision(x, y, player, 3)) then
 			if (not existCollision(x, y, player, 2) or player.isGhost) then
@@ -474,6 +518,7 @@ function setItemForPlayer(prPlayer)
 	mapItem[posYPlayer][posXPlayer]=0
 end
 
+--todo: refatorar
 function movementMonsters()
 	for i=1, #monsters do 
 		local currentTime = love.timer.getTime()
@@ -483,9 +528,6 @@ function movementMonsters()
 		if key == 1 then
 			if noCollision(0, -1, monsters[i]) then
 				if(timeResult > monsters[i].movementTime) then
-					if(existCollision(0,-1,monsters[i],4))then
-						gameOver=true
-					end
 					map[monsters[i].grid_y/sideSquare][monsters[i].grid_x/sideSquare]=0
 					monsters[i].grid_y = monsters[i].grid_y - sideSquare
 					map[monsters[i].grid_y/sideSquare][monsters[i].grid_x/sideSquare]=5
@@ -495,9 +537,6 @@ function movementMonsters()
 		elseif key == 2 then
 			if noCollision(0, 1, monsters[i]) then
 				if(timeResult > monsters[i].movementTime) then
-					if(existCollision(0,1,monsters[i],4))then
-						gameOver=true
-					end
 					map[monsters[i].grid_y/sideSquare][monsters[i].grid_x/sideSquare]=0
 					monsters[i].grid_y = monsters[i].grid_y + sideSquare
 					map[monsters[i].grid_y/sideSquare][monsters[i].grid_x/sideSquare]=5
@@ -507,9 +546,6 @@ function movementMonsters()
 		elseif key == 3 then
 			if noCollision(-1, 0, monsters[i]) then
 				if(timeResult > monsters[i].movementTime) then
-					if(existCollision(-1,0,monsters[i],4))then
-						gameOver=true
-					end
 					map[monsters[i].grid_y/sideSquare][monsters[i].grid_x/sideSquare]=0
 					monsters[i].grid_x = monsters[i].grid_x - sideSquare
 					map[monsters[i].grid_y/sideSquare][monsters[i].grid_x/sideSquare]=5
@@ -519,9 +555,6 @@ function movementMonsters()
 		elseif key == 4 then
 			if noCollision(1, 0, monsters[i]) then
 				if(timeResult > monsters[i].movementTime) then
-					if(existCollision(1,0,monsters[i],4))then
-						gameOver=true
-					end
 					map[monsters[i].grid_y/sideSquare][monsters[i].grid_x/sideSquare]=0
 					monsters[i].grid_x = monsters[i].grid_x + sideSquare
 					map[monsters[i].grid_y/sideSquare][monsters[i].grid_x/sideSquare]=5
@@ -531,6 +564,8 @@ function movementMonsters()
 		end
 	end
 end
+
+--todo: verificar a utização de colisao com o valueMap=4
 
 --valueMap=1 --> collision of object with blocks
 --valueMap=2 --> collision of object with stones
@@ -547,11 +582,11 @@ function existCollision(x, y, object, valueMap)
 			end
 		end
 	elseif(valueMap==3)then
-		if(#player.bomb>0)then
+		--if(#player.bomb>0)then
 			if map[(object.grid_y / sideSquare) + y][(object.grid_x / sideSquare) + x] == valueMap then
 				return true
 			end
-		end
+		--end
 	elseif(valueMap==6)then			
 		if mapItem[(object.grid_y / sideSquare) + y][(object.grid_x / sideSquare) + x] ~=0 then
 			return true
@@ -565,27 +600,42 @@ function existCollision(x, y, object, valueMap)
 	return false
 end
  
-function noCollision(x, y, item)
+function noCollision(x, y, object)
 	-- Nome: variável "x"
 	-- Propriedade: endereço
 	-- Binding time: execução
 	-- Explicação: dado que x é uma variável local de uma função, seu endereço só pode ser determinado em tempo de execução    
-	if map[(item.grid_y / sideSquare) + y][(item.grid_x / sideSquare) + x] == 1 or
-	   map[(item.grid_y / sideSquare) + y][(item.grid_x / sideSquare) + x] == 2 
+	if map[(object.grid_y / sideSquare) + y][(object.grid_x / sideSquare) + x] == 1 or
+	   map[(object.grid_y / sideSquare) + y][(object.grid_x / sideSquare) + x] == 2 or 
+	   map[(object.grid_y / sideSquare) + y][(object.grid_x / sideSquare) + x] == 5 
 	then
 		return false
 	end
-	if(existCollisionWithBomb(x,y,item))then
+	if(existCollisionWithBomb(x,y,object))then
 		return false
 	end
 	return true
 end
 
-function existCollisionWithBomb(x, y, item)
-	if(#player.bomb>0)then
-		for i=1, #player.bomb do 
-			if map[(item.grid_y / sideSquare) + y][(item.grid_x / sideSquare) + x] == 3 then
-				return true
+--POR ENQUANTO UM PLAYER SO VAI CONSEGUIR CHUTAR SUAS PROPRIAS BOMBAS
+function getIndexBombCollision(x, y, object)
+	if(#object.bomb>0)then
+		for i=#object.bomb,1,-1 do 
+			if map[(object.grid_y / sideSquare) + y][(object.grid_x / sideSquare) + x] == 3 then
+				return i
+			end
+		end
+	end
+	return 0
+end
+
+function existCollisionWithBomb(x, y, object)
+	for i=1, #players do 
+		if(#players[i].bomb>0)then
+			for j=#players[i].bomb,1,-1 do 
+				if map[(object.grid_y / sideSquare) + y][(object.grid_x / sideSquare) + x] == 3 then
+					return true
+				end
 			end
 		end
 	end
@@ -593,40 +643,41 @@ function existCollisionWithBomb(x, y, item)
 end
 
 function explosion()
-	if(#player.bomb>0) then
-		for i=#player.bomb, 1, -1 do	
-			local currentTime = love.timer.getTime()
-			local timeResult = math.floor(currentTime - player.bomb[i].initTime)
-			map[(player.bomb[i].grid_y / sideSquare)][(player.bomb[i].grid_x / sideSquare)]=3
-			if(timeResult > player.bomb[i].timeExplosion) then
-				explosionCollision(0, 1, player.bomb[i])
-				explosionCollision(0, -1, player.bomb[i])
-				explosionCollision(1, 0, player.bomb[i])
-				explosionCollision(-1, 0, player.bomb[i])
-				--When the player is on the bomb
-				if(isPlayerOnTheBomb())then
-					gameOver=true
+	for i=1, #players do 
+		if(#players[i].bomb>0) then
+			for j=#players[i].bomb, 1, -1 do	
+				local currentTime = love.timer.getTime()
+				local timeResult = math.floor(currentTime - players[i].bomb[j].initTime)
+				map[(players[i].bomb[j].grid_y / sideSquare)][(players[i].bomb[j].grid_x / sideSquare)]=3
+				if(timeResult > players[i].bomb[j].timeExplosion) then
+					explosionCollision(0, 1, players[i].bomb[j],players[i])
+					explosionCollision(0, -1, players[i].bomb[j],players[i])
+					explosionCollision(1, 0, players[i].bomb[j],players[i])
+					explosionCollision(-1, 0, players[i].bomb[j],players[i])
+					--When the player is on the bomb
+					if(isPlayerOnTheBomb(players[i].bomb[j]))then
+						gameOver=true
+					end
+					players[i].bomb[j].kickBombDirection="-"
+					map[(players[i].bomb[j].grid_y / sideSquare)][(players[i].bomb[j].grid_x / sideSquare)] = 0
+					table.remove(players[i].bomb, j)
 				end
-				player.bomb[i].kickBombDirection="-"
-				map[(player.bomb[i].grid_y / sideSquare)][(player.bomb[i].grid_x / sideSquare)] = 0
-				table.remove(player.bomb, i)
 			end
 		end
 	end
 end
 
-function isPlayerOnTheBomb()
-	if(#player.bomb>0)then
-		for i=1, #player.bomb do 
-			if(player.bomb[i].grid_y==player.grid_y and player.bomb[i].grid_x==player.grid_x)then
-				return true
-			end
+function isPlayerOnTheBomb(bomb)
+	for i=1, #players do 
+		if(bomb.grid_y==players[i].grid_y and bomb.grid_x==players[i].grid_x)then
+			msgGameOver="Fim de jogo - player "..i.." perdeu."
+			return true
 		end
 	end
 	return false
 end
 
-function explosionCollision(x, y, bomb)
+function explosionCollision(x, y, bomb,player)
 	local i=1
 	for i=1, player.bombDistanceExplosion do	
 		love.graphics.rectangle("fill", bomb.grid_x  + (x*i*sideSquare),bomb.grid_y + (y*i*sideSquare), sideSquare, sideSquare)
@@ -655,24 +706,23 @@ function explosionCollision(x, y, bomb)
 			-- Binding time: desenho
 			-- Explicação: A palavra 'break' é utilizada para desviar as instruções para fora do laço a qual o break se encontra
 		end	
-		--explosion colision with player
-		if(bomb.grid_x +(sideSquare*i*x)==player.grid_x and bomb.grid_y +(sideSquare*i*y)==player.grid_y)
-		then	
-			gameOver=true
-		end		
+		--explosion colision with players
+		for j=1, #players do 
+			if(bomb.grid_x +(sideSquare*i*x)==players[j].grid_x and bomb.grid_y +(sideSquare*i*y)==players[j].grid_y)
+			then	
+				gameOver=true
+				msgGameOver="Fim de jogo - player "..i.." perdeu."
+			end		
+		end
+		
 		--explosion colision with monsters
 		local j
-		--local aux=false
 		for j=#monsters,1,-1 do 
 			if(bomb.grid_x +(sideSquare*i*x)==monsters[j].grid_x and bomb.grid_y +(sideSquare*i*y)==monsters[j].grid_y)
 			then
 				map[(monsters[j].grid_y / sideSquare)][(monsters[j].grid_x / sideSquare)] = 0
 			    table.remove(monsters, j)
-			--	aux=true
 			end		
 		end
-		--if(aux)then
-			--break
-		--end
 	end
 end

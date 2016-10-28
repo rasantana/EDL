@@ -1,0 +1,13 @@
+O primeiro jogador está se movimentando da seguinte forma:
+w:cima
+s:baixo
+a:esquerda
+d:direita
+space:bomba
+
+O segundo jogador está se movimentando da seguinte forma:
+seta cima:cima
+seta baixo:baixo
+seta esquerda:esquerda
+seta direita:direita
+enter:bomba

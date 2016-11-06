@@ -1,28 +1,23 @@
 local exports = {}
 
-exports.newBomb = function (prGridX,prGridY,prActX,prActY,prSpeed,prInitTime,prTimeExplosion
-						   ,prDistanceExplosion,prExistBomb,prLastIconTime,prIconChange
-						   ,prIconNumber,prIconRevert,prIconFlag,prLastKickBombTime
-						   ,prKickBombFlag,prKickBombDirection,prImg)
+exports.newBomb = function ()
     local bomb = {}    
-	bomb.grid_x = prGridX
-	bomb.grid_y = prGridY
-	bomb.act_x = prActX
-	bomb.act_y = prActY
-	bomb.speed = prSpeed
-	bomb.initTime = prInitTime
-	bomb.timeExplosion = prTimeExplosion
-	bomb.distanceExplosion = prDistanceExplosion
-	bomb.existBomb=prExistBomb
-	bomb.lastIconTime = prLastIconTime
-	bomb.iconChange =prIconChange
-	bomb.iconNumber=prIconNumber
-	bomb.iconRevert=prIconRevert
-	bomb.iconFlag=prIconFlag
-	bomb.lastKickBombTime=prLastKickBombTime
-	bomb.kickBombFlag=prKickBombFlag
-	bomb.kickBombDirection=prKickBombDirection
-	bomb.img = love.graphics.newImage(prImg)
+	bomb.grid_x = 0
+	bomb.grid_y = 0
+	bomb.act_x = 0
+	bomb.act_y = 0
+	bomb.speed = 10
+	bomb.initTime = 0
+	bomb.timeExplosion = 3
+	bomb.lastIconTime = 0
+	bomb.iconChange =false
+	bomb.iconNumber=1
+	bomb.iconRevert=false
+	bomb.iconFlag=0.15
+	bomb.lastKickBombTime=0
+	bomb.kickBombFlag=0.5
+	bomb.kickBombDirection="-"
+	bomb.img = love.graphics.newImage("/Imagens/bomb1.PNG")
 
     return bomb
 end
